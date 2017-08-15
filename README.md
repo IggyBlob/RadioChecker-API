@@ -47,11 +47,13 @@ The following endpoints are provided by the API service (ordered by importance):
 Most-played tracks (ranked) for the specified day
 2. `/api/<config.stations.station.uri>/tracks/day/2016-10-01/all`
 Complete list of all tracks played on the specified day
-3. `/api/<config.stations.station.uri>/tracks/week/52/top`
+3. `/api/config/stations`
+List of available radio stations (those specified in `config.stations`)
+4. `/api/<config.stations.station.uri>/tracks/week/52/top`
 Most-played tracks (ranked) for the specified week
-4. `/api/query/<track name>`
+5. `/api/query/<track name>`
 Number of times the track was played on every radio station (how to specify the time period - day/week/year?)
-4. `/api/<config.stations.station.uri>/tracks/week/52/all`
+6. `/api/<config.stations.station.uri>/tracks/week/52/all`
 Complete list of tracks played on the specified day (not really necessary)
 
 
