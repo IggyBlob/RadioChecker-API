@@ -1,4 +1,4 @@
-<img src="http://radiochecker.paulhaunschmied.com/assets/img/jack.png" alt="RadioChecker Logo" width="150"/>
+<img src="http://radiochecker.paulhaunschmied.com/assets/img/jack.png" alt="RadioChecker Logo" width="200"/>
 
 # RadioChecker.com API
 The API service provides data via a REST interface to other RadioChecker services, e.g. the frontend.
