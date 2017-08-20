@@ -1,0 +1,13 @@
+{
+  "service": {
+    "name": "rc-api-svc",
+    "port": 8080
+  },
+  "datastore": {
+    "host": "hostname",
+    "port": 3306,
+    "username": "username",
+    "password": "password",
+    "schema": "radiochecker"
+  }
+}

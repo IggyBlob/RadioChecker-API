@@ -17,25 +17,15 @@ Example *config.json*:
 ```
 {
     "service": {
-        "name": "rc-api-srv",
-        "address": "localhost",
-        "port": 5799,
-        "database": {
-            "host": "localhost",
-            "port": 1234,
-            "username": "John",
-            "password": "Doe"
-        },
+        "name": "rc-api-svc",
+        "port": 8080
     },
-    "stations": {
-        "hitradio-oe3": {
-            "uri": "hitradio-oe3",
-            "database-table": "hitradio-oe3"
-        },
-        "kronehit": {
-            "uri": "kronehit",
-            "database-table": "kronehit"
-        },
+    "datastore": {
+        "host": "hostname",
+        "port": 3306,
+        "username": "username",
+        "password": "password",
+        "schema": "radiochecker"
     }
 }
 ```
