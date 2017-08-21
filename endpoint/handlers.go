@@ -12,10 +12,12 @@ import (
 	"errors"
 )
 
+// index is the default handler.
 func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "RadioChecker API")
 }
 
+// getStations returns a map of all active radiostations using the format { "Name":"URI", ... }.
 func getStations(w http.ResponseWriter, r *http.Request) {
 	stations, err := ds.GetRadiostations()
 	if err != nil {
@@ -32,6 +34,7 @@ func getStations(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, j)
 }
 
+// getTracksDay returns either the top-3 tracks or all tracks (without duplicates) of a day.
 func getTracksDay(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	if _, err := ds.GetRadiostationID(vars["station"]); err != nil {
@@ -92,6 +95,7 @@ func getTracksDay(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, j)
 }
 
+// getTracksWeek returns either the top-3 tracks or all tracks (without duplicates) of a day.
 func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	if _, err := ds.GetRadiostationID(vars["station"]); err != nil {
@@ -130,9 +134,6 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 		23, 59, 59, 0,
 		since.Location(),
 	) // Sunday 23:59:59
-	
-	log.Println(since)
-	log.Println(until)
 
 	var tracks []track.Track
 	if vars["filter"] == "top" {
@@ -163,16 +164,29 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, j)
 }
 
-func getTrackQuery(w http.ResponseWriter, r *http.Request) {
+// getTrackQueryDay returns the times a track has been played on the specified day on every active radiostation.
+func getTrackQueryDay(w http.ResponseWriter, r *http.Request) {
 	handleError(w, http.StatusNotImplemented, "Not implemented")
 }
 
+// getTrackQueryWeek returns the times a track has been played during the specified week on every active radiostation.
+func getTrackQueryWeek(w http.ResponseWriter, r *http.Request) {
+	handleError(w, http.StatusNotImplemented, "Not implemented")
+}
+
+// getTrackQueryYear returns the times a track has been played during the specified year on every active radiostation.
+func getTrackQueryYear(w http.ResponseWriter, r *http.Request) {
+	handleError(w, http.StatusNotImplemented, "Not implemented")
+}
+
+// writeJSONResponse is a utility function that writes a 200 OK JSON response to the ResponseWriter.
 func writeJSONResponse(w http.ResponseWriter, json []byte) {
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write(json)
 }
 
+// handleError is a utility function that writes a specified error response to the ResponseWriter.
 func handleError(w http.ResponseWriter, statuscode int, msg string) {
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	w.WriteHeader(statuscode)
@@ -181,6 +195,7 @@ func handleError(w http.ResponseWriter, statuscode int, msg string) {
 	}
 }
 
+// firstDayOfISOWeek is a utility function that returns the first date of a specified week.
 func firstDayOfISOWeek(year int, week int, timezone *time.Location) (time.Time, error) {
 	if week < 1 || week > 53 {
 		return time.Time{}, errors.New("week out of range")

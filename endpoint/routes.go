@@ -41,7 +41,19 @@ var routes = Routes {
 	Route{
 		"GetTrackQuery",
 		"GET",
-		"/query/{trackname}",
-		getTrackQuery,
+		"/query/{artist}/{title}/day/{date}",
+		getTrackQueryDay,
+	},
+	Route{
+		"GetTrackQuery",
+		"GET",
+		"/query/{artist}/{title}/week/{week}",
+		getTrackQueryWeek,
+	},
+	Route{
+		"GetTrackQuery",
+		"GET",
+		"/query/{artist}/{title}/year/{year}",
+		getTrackQueryYear,
 	},
 }
