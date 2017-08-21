@@ -27,10 +27,16 @@ var routes = Routes {
 		getStations,
 	},
 	Route{
-		"GetTopTracks",
+		"GetTracksDay",
 		"GET",
-		"/{station}/tracks/{period:}/{date:dddd-dd-dd|dd}/{filter}",
-		getTopTracks,
+		"/{station}/tracks/day/{date:\\d{4}-\\d{2}-\\d{2}}/{filter:all|top}",
+		getTracksDay,
+	},
+	Route{
+		"GetTracksWeek",
+		"GET",
+		"/{station}/tracks/week/{year:\\d{4}}/{week:\\d{2}}/{filter:all|top}",
+		getTracksWeek,
 	},
 	Route{
 		"GetTrackQuery",
