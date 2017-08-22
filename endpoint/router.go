@@ -3,7 +3,7 @@ package endpoint
 import (
 	"github.com/gorilla/mux"
 	"net/http"
-	"RadioChecker-Crawler-HitradioOE3/datastore"
+	"github.com/IggyBlob/RadioChecker-Core-Library/datastore"
 	"errors"
 )
 

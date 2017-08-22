@@ -7,7 +7,7 @@ import (
 	"github.com/dustin/gojson"
 	"github.com/gorilla/mux"
 	"time"
-	"RadioChecker-Crawler-HitradioOE3/track"
+	"github.com/IggyBlob/RadioChecker-Core-Library/track"
 	"strconv"
 	"errors"
 )
@@ -86,7 +86,7 @@ func getTracksDay(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := response{vars["station"], vars["date"], tracks}
-	j, err := json.Marshal(resp)
+	j, err := json.MarshalIndent(resp, "", "    ")
 	if err != nil {
 		log.Printf("getTracksDay Handler: %s\n", err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")

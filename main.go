@@ -5,7 +5,7 @@ import (
 	"RadioChecker-API/endpoint"
 	"log"
 	"net/http"
-	"RadioChecker-Crawler-HitradioOE3/datastore"
+	"github.com/IggyBlob/RadioChecker-Core-Library/datastore"
 )
 
 const confFile string = "config_prod"
