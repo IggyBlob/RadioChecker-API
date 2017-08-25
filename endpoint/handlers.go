@@ -166,17 +166,17 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 
 // getTrackQueryDay returns the times a track has been played on the specified day on every active radiostation.
 func getTrackQueryDay(w http.ResponseWriter, r *http.Request) {
-	handleError(w, http.StatusNotImplemented, "Not implemented")
+	handleNotImplemented(w)
 }
 
 // getTrackQueryWeek returns the times a track has been played during the specified week on every active radiostation.
 func getTrackQueryWeek(w http.ResponseWriter, r *http.Request) {
-	handleError(w, http.StatusNotImplemented, "Not implemented")
+	handleNotImplemented(w)
 }
 
 // getTrackQueryYear returns the times a track has been played during the specified year on every active radiostation.
 func getTrackQueryYear(w http.ResponseWriter, r *http.Request) {
-	handleError(w, http.StatusNotImplemented, "Not implemented")
+	handleNotImplemented(w)
 }
 
 // writeJSONResponse is a utility function that writes a 200 OK JSON response to the ResponseWriter.
@@ -193,6 +193,11 @@ func handleError(w http.ResponseWriter, statuscode int, msg string) {
 	if msg != "" {
 		w.Write([]byte(msg + "\n"))
 	}
+}
+
+// handleNotImplemented is a utility function that writes a 501 Not implemented to the ResponseWriter.
+func handleNotImplemented(w http.ResponseWriter) {
+	handleError(w, http.StatusNotImplemented, "Not implemented")
 }
 
 // firstDayOfISOWeek is a utility function that returns the first date of a specified week.
