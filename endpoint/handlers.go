@@ -154,7 +154,11 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 		Plays []track.Track `json:"plays"`
 	}
 
-	resp := response{vars["station"], vars["date"], tracks}
+	resp := response{
+		vars["station"],
+		fmt.Sprintf("%s - %s", since.Format("2006-01-02"), until.Format("2006-01-02")),
+		tracks,
+	}
 	j, err := json.Marshal(resp)
 	if err != nil {
 		log.Printf("getTracksDay Handler: %s\n", err.Error())
