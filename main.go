@@ -35,6 +35,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to create router: %s\n", err)
 	}
-	log.Printf("listening")
+	log.Printf("%s up and running on port %d", viper.GetString("service.name"), viper.GetInt("service.port"))
 	log.Fatal(http.ListenAndServe(":" + viper.GetString("service.port"), router))
 }

@@ -186,6 +186,7 @@ func getTrackQueryYear(w http.ResponseWriter, r *http.Request) {
 // writeJSONResponse is a utility function that writes a 200 OK JSON response to the ResponseWriter.
 func writeJSONResponse(w http.ResponseWriter, json []byte) {
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK)
 	w.Write(json)
 }
@@ -193,6 +194,7 @@ func writeJSONResponse(w http.ResponseWriter, json []byte) {
 // handleError is a utility function that writes a specified error response to the ResponseWriter.
 func handleError(w http.ResponseWriter, statuscode int, msg string) {
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(statuscode)
 	if msg != "" {
 		w.Write([]byte(msg + "\n"))
