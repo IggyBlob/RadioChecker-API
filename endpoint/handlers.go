@@ -7,9 +7,10 @@ import (
 	"github.com/dustin/gojson"
 	"github.com/gorilla/mux"
 	"time"
-	"github.com/IggyBlob/RadioChecker-Core-Library/track"
+	"github.com/IggyBlob/RadioChecker-Core-Library/model"
 	"strconv"
 	"errors"
+	"strings"
 )
 
 // index is the default handler.
@@ -66,7 +67,7 @@ func getTracksDay(w http.ResponseWriter, r *http.Request) {
 		loc,
 	)
 
-	var tracks []track.Track
+	var tracks []model.Track
 	if vars["filter"] == "top" {
 		tracks, err = ds.GetTopTracks(vars["station"], since, until)
 	} else {
@@ -82,7 +83,7 @@ func getTracksDay(w http.ResponseWriter, r *http.Request) {
 	type response struct {
 		Station string `json:"station"`
 		Date string `json:"date"`
-		Plays []track.Track `json:"plays"`
+		Plays []model.Track `json:"plays"`
 	}
 
 	resp := response{vars["station"], vars["date"], tracks}
@@ -135,7 +136,7 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 		since.Location(),
 	) // Sunday 23:59:59
 
-	var tracks []track.Track
+	var tracks []model.Track
 	if vars["filter"] == "top" {
 		tracks, err = ds.GetTopTracks(vars["station"], since, until)
 	} else {
@@ -153,7 +154,7 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 		WeekNo string `json:"weekNo"`
 		BeginDate string `json:"beginDate"`
 		EndDate string `json:"endDate"`
-		Plays []track.Track `json:"plays"`
+		Plays []model.Track `json:"plays"`
 	}
 
 	resp := response{
@@ -172,18 +173,104 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, j)
 }
 
-// getTrackQueryDay returns the times a track has been played on the specified day on every active radiostation.
-func getTrackQueryDay(w http.ResponseWriter, r *http.Request) {
+// getSearchQueryDay returns the times a track has been played on the specified day on every active radiostation.
+func getSearchQueryDay(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	t, err := time.Parse("2006-01-02", vars["date"])
+	if err !=  nil {
+		log.Printf("getSearchQueryDay Handler: time.Parse(%s): %s\n", vars["date"], err.Error())
+		handleError(w, http.StatusBadRequest, "Bad request")
+		return
+	}
+
+	loc, _ := time.LoadLocation("Europe/Vienna")
+	since := time.Date(
+		t.Year(),
+		t.Month(),
+		t.Day(),
+		0, 0, 0, 0,
+		loc,
+	)
+	until := time.Date(
+		t.Year(),
+		t.Month(),
+		t.Day(),
+		23, 59, 59, 0,
+		loc,
+	)
+
+	tracks, err := ds.GetSearchResult(strings.Replace(vars["query"], "+", ",", -1), since, until)
+	if err != nil {
+		log.Printf("getSearchQueryDay Handler: GetSearchResult(%s, %q, %q): %s\n",
+			strings.Replace(vars["query"], "+", ",", -1), since, until, err.Error())
+		handleError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	type result struct {
+		Track model.Track `json:"track"`
+		Plays []int `json:"plays"`
+	}
+
+	type response struct {
+		Stations []string `json:"stations"`
+		Date string `json:"date"`
+		Results []*result`json:"results"`
+	}
+
+	// group equal radio stations by storing their Name value into the stationsFiltered array
+	// create a stationsMeta map that assigns the position of the radiostation's name in the stationsFiltered array
+	// to make inserting the radiostation's play count to the correct position of a return object's Play array
+	// easier (see group equal tracks)
+	stationsMeta := make(map[string]int)
+	stationsFiltered := make([]string, 0)
+	i := 0
+	for _, track := range tracks {
+		if _, exists := stationsMeta[track.Radiostation.URI]; !exists {
+			stationsMeta[track.Radiostation.URI] = i
+			stationsFiltered = append(stationsFiltered, track.Radiostation.Name)
+			i++
+		}
+	}
+
+	// group equal tracks in a new result object and assign their play count to the respective position in the
+	// result object's Play array
+	tracksGrouped := make(map[int64]*result)
+	for _, track := range tracks {
+		if _, exists := tracksGrouped[track.ID]; !exists {
+			tracksGrouped[track.ID] = &result{ track, make([]int, len(stationsFiltered))}
+		}
+		tracksGrouped[track.ID].Plays[stationsMeta[track.Radiostation.URI]] = track.Count
+		tracksGrouped[track.ID].Track.Count = 0 // prevent JSON marshalling of the original Count field by
+							// setting it to its NULL value
+	}
+
+	// convert map into array
+	results := make([]*result, len(tracksGrouped))
+	i = 0
+	for _, result := range tracksGrouped {
+		results[i] = result
+		i++
+	}
+
+	resp := response{stationsFiltered, vars["date"], results}
+	j, err := json.MarshalIndent(resp, "", "    ")
+	if err != nil {
+		log.Printf("getTracksDay Handler: %s\n", err.Error())
+		handleError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+	writeJSONResponse(w, j)
+}
+
+// getSearchQueryWeek returns the times a track has been played during the specified week on every active radiostation.
+func getSearchQueryWeek(w http.ResponseWriter, r *http.Request) {
 	handleNotImplemented(w)
 }
 
-// getTrackQueryWeek returns the times a track has been played during the specified week on every active radiostation.
-func getTrackQueryWeek(w http.ResponseWriter, r *http.Request) {
-	handleNotImplemented(w)
-}
-
-// getTrackQueryYear returns the times a track has been played during the specified year on every active radiostation.
-func getTrackQueryYear(w http.ResponseWriter, r *http.Request) {
+// getSearchQueryYear returns the times a track has been played during the specified year on every active radiostation.
+func getSearchQueryYear(w http.ResponseWriter, r *http.Request) {
 	handleNotImplemented(w)
 }
 
