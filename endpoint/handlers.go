@@ -142,7 +142,7 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 		tracks, err = ds.GetAllTracks(vars["station"], since, until)
 	}
 	if err != nil {
-		log.Printf("getTracksDay Handler: GetTopTracks/GetAllTracks(%s, %q, %q): %s\n", vars["station"],
+		log.Printf("getTracksWeek Handler: GetTopTracks/GetAllTracks(%s, %q, %q): %s\n", vars["station"],
 			since, until, err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")
 		return
@@ -165,7 +165,7 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 	}
 	j, err := json.Marshal(resp)
 	if err != nil {
-		log.Printf("getTracksDay Handler: %s\n", err.Error())
+		log.Printf("getTracksWeek Handler: %s\n", err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
@@ -209,7 +209,7 @@ func getSearchQueryDay(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := orderSearchResults(tracks, since, time.Time{}, 0)
 	if err != nil {
-		log.Printf("getSearchQueryDay Handler: orderSearchResults(%q, %q, %q, %d): %s\n",
+		log.Printf("getSearchQueryWeek Handler: orderSearchResults(%q, %q, %q, %d): %s\n",
 			tracks, since, time.Time{}, 0, err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")
 		return
@@ -217,7 +217,7 @@ func getSearchQueryDay(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.MarshalIndent(resp, "", "    ")
 	if err != nil {
-		log.Printf("getTracksDay Handler: %s\n", err.Error())
+		log.Printf("getSearchQueryWeek Handler: %s\n", err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
@@ -226,7 +226,63 @@ func getSearchQueryDay(w http.ResponseWriter, r *http.Request) {
 
 // getSearchQueryWeek returns the times a track has been played during the specified week on every active radiostation.
 func getSearchQueryWeek(w http.ResponseWriter, r *http.Request) {
-	handleNotImplemented(w)
+	vars := mux.Vars(r)
+
+	loc, _ := time.LoadLocation("Europe/Vienna")
+
+	year, err := strconv.Atoi(vars["year"])
+	if err != nil {
+		log.Printf("getSearchQueryWeek Handler: atoi(%s): %s\n", vars["year"], err.Error())
+		handleError(w, http.StatusBadRequest, "Bad request")
+		return
+	}
+	week, err := strconv.Atoi(vars["week"])
+	if err != nil {
+		log.Printf("getSearchQueryWeek Handler: atoi(%s): %s\n", vars["week"], err.Error())
+		handleError(w, http.StatusBadRequest, "Bad request")
+		return
+	}
+
+	since, err := firstDayOfISOWeek(year, week, loc) // Monday 00:00:00
+	if err != nil {
+		log.Printf("getSearchQueryWeek Handler: firstDayOfISOWeek(%d, %d, %q): %s\n", year, week, loc,
+			err.Error())
+		handleError(w, http.StatusBadRequest, "Bad request")
+		return
+	}
+
+	until := since.AddDate(0, 0, 6) // Sunday 00:00:00
+	until = time.Date(
+		until.Year(),
+		until.Month(),
+		until.Day(),
+		23, 59, 59, 0,
+		since.Location(),
+	) // Sunday 23:59:59
+
+	tracks, err := ds.GetSearchResult(strings.Replace(vars["query"], "+", ",", -1), since, until)
+	if err != nil {
+		log.Printf("getSearchQueryWeek Handler: GetSearchResult(%s, %q, %q): %s\n",
+			strings.Replace(vars["query"], "+", ",", -1), since, until, err.Error())
+		handleError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	resp, err := orderSearchResults(tracks, since, until, week)
+	if err != nil {
+		log.Printf("getSearchQueryWeek Handler: orderSearchResults(%q, %q, %q, %d): %s\n",
+			tracks, since, until, week, err.Error())
+		handleError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	j, err := json.MarshalIndent(resp, "", "    ")
+	if err != nil {
+		log.Printf("getSearchQueryWeek Handler: %s\n", err.Error())
+		handleError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+	writeJSONResponse(w, j)
 }
 
 // getSearchQueryYear returns the times a track has been played during the specified year on every active radiostation.
