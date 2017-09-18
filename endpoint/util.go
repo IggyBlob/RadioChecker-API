@@ -105,10 +105,12 @@ weekNo int) (*getSearchQueryResponse, error){
 	// trackOrder to be able to restore the relevance order determined by the database engine.
 	trackOrder := make(map[int64]int)
 	tracksGrouped := make(map[int64]*orderSearchResult)
-	for i, track := range searchResult {
+	i = 0
+	for _, track := range searchResult {
 		if _, exists := tracksGrouped[track.ID]; !exists {
 			trackOrder[track.ID] = i
 			tracksGrouped[track.ID] = &orderSearchResult{ track, make([]int, len(stationsFiltered))}
+			i++
 		}
 		tracksGrouped[track.ID].Plays[stationsMeta[track.Radiostation.URI]] = track.Count
 		tracksGrouped[track.ID].Track.Count = 0 // prevent JSON marshalling of the original Count field by
