@@ -5,6 +5,7 @@ import (
 	"time"
 	"errors"
 	"github.com/IggyBlob/RadioChecker-Core-Library/model"
+	"encoding/json"
 )
 
 type orderSearchResult struct {
@@ -24,7 +25,7 @@ type getSearchQueryResponse struct {
 // writeJSONResponse is a utility function that writes a 200 OK JSON response to the ResponseWriter.
 func writeJSONResponse(w http.ResponseWriter, json []byte) {
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", conf.CORS)
 	w.WriteHeader(http.StatusOK)
 	w.Write(json)
 }
@@ -32,7 +33,7 @@ func writeJSONResponse(w http.ResponseWriter, json []byte) {
 // handleError is a utility function that writes a specified error response to the ResponseWriter.
 func handleError(w http.ResponseWriter, statuscode int, msg string) {
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", conf.CORS)
 	w.WriteHeader(statuscode)
 	if msg != "" {
 		w.Write([]byte(msg + "\n"))
@@ -135,4 +136,13 @@ weekNo int) (*getSearchQueryResponse, error){
 	}
 
 	return resp, nil
+}
+
+// jsonMarshal wraps the Go JSON Marshaller functions to be able to indent the resulting byte array if the API runs in
+// debug mode.
+func jsonMarshal(v interface{}) ([]byte, error) {
+	if conf.Debug {
+		return json.MarshalIndent(v, "", "    ")
+	}
+	return json.Marshal(v)
 }

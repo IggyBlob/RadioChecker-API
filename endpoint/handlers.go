@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"fmt"
 	"log"
-	"github.com/dustin/gojson"
 	"github.com/gorilla/mux"
 	"time"
 	"github.com/IggyBlob/RadioChecker-Core-Library/model"
@@ -14,18 +13,18 @@ import (
 
 // index is the default handler.
 func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "RadioChecker API")
+	fmt.Fprintln(w, "RadioChecker API v1.0\n\nCopyright (C) 2017 Paul Haunschmied.\nwww.radiochecker.com")
 }
 
 // getStations returns a map of all active radiostations using the format { "Name":"URI", ... }.
 func getStations(w http.ResponseWriter, r *http.Request) {
-	stations, err := ds.GetRadiostations()
+	stations, err := conf.DS.GetRadiostations()
 	if err != nil {
 		log.Printf("getStations Handler: %s\n", err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
-	j, err := json.Marshal(stations)
+	j, err := jsonMarshal(stations)
 	if err != nil {
 		log.Printf("getStations Handler: %s\n", err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")
@@ -37,7 +36,7 @@ func getStations(w http.ResponseWriter, r *http.Request) {
 // getTracksDay returns either the top-3 tracks or all tracks (without duplicates) of a day.
 func getTracksDay(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	if _, err := ds.GetRadiostationID(vars["station"]); err != nil {
+	if _, err := conf.DS.GetRadiostationID(vars["station"]); err != nil {
 		log.Printf("getTracksDay Handler: GetRadiostationID(%s): %s\n", vars["station"], err.Error())
 		handleError(w, http.StatusBadRequest, "Bad request")
 		return
@@ -68,9 +67,9 @@ func getTracksDay(w http.ResponseWriter, r *http.Request) {
 
 	var tracks []model.Track
 	if vars["filter"] == "top" {
-		tracks, err = ds.GetTopTracks(vars["station"], since, until)
+		tracks, err = conf.DS.GetTopTracks(vars["station"], since, until)
 	} else {
-		tracks, err = ds.GetAllTracks(vars["station"], since, until)
+		tracks, err = conf.DS.GetAllTracks(vars["station"], since, until)
 	}
 	if err != nil {
 		log.Printf("getTracksDay Handler: GetTopTracks/GetAllTracks(%s, %q, %q): %s\n", vars["station"],
@@ -86,7 +85,7 @@ func getTracksDay(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := response{vars["station"], vars["date"], tracks}
-	j, err := json.MarshalIndent(resp, "", "    ")
+	j, err := jsonMarshal(resp)
 	if err != nil {
 		log.Printf("getTracksDay Handler: %s\n", err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")
@@ -98,7 +97,7 @@ func getTracksDay(w http.ResponseWriter, r *http.Request) {
 // getTracksWeek returns either the top-3 tracks or all tracks (without duplicates) of a day.
 func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	if _, err := ds.GetRadiostationID(vars["station"]); err != nil {
+	if _, err := conf.DS.GetRadiostationID(vars["station"]); err != nil {
 		log.Printf("getTracksWeek Handler: GetRadiostationID(%s): %s\n", vars["station"], err.Error())
 		handleError(w, http.StatusBadRequest, "Bad request")
 		return
@@ -137,9 +136,9 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 
 	var tracks []model.Track
 	if vars["filter"] == "top" {
-		tracks, err = ds.GetTopTracks(vars["station"], since, until)
+		tracks, err = conf.DS.GetTopTracks(vars["station"], since, until)
 	} else {
-		tracks, err = ds.GetAllTracks(vars["station"], since, until)
+		tracks, err = conf.DS.GetAllTracks(vars["station"], since, until)
 	}
 	if err != nil {
 		log.Printf("getTracksWeek Handler: GetTopTracks/GetAllTracks(%s, %q, %q): %s\n", vars["station"],
@@ -163,7 +162,7 @@ func getTracksWeek(w http.ResponseWriter, r *http.Request) {
 		until.Format("2006-01-02"),
 		tracks,
 	}
-	j, err := json.Marshal(resp)
+	j, err := jsonMarshal(resp)
 	if err != nil {
 		log.Printf("getTracksWeek Handler: %s\n", err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")
@@ -199,7 +198,7 @@ func getSearchQueryDay(w http.ResponseWriter, r *http.Request) {
 		loc,
 	)
 
-	tracks, err := ds.GetSearchResult(strings.Replace(vars["query"], "+", ",", -1), since, until)
+	tracks, err := conf.DS.GetSearchResult(strings.Replace(vars["query"], "+", ",", -1), since, until)
 	if err != nil {
 		log.Printf("getSearchQueryDay Handler: GetSearchResult(%s, %q, %q): %s\n",
 			strings.Replace(vars["query"], "+", ",", -1), since, until, err.Error())
@@ -215,7 +214,7 @@ func getSearchQueryDay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	j, err := json.MarshalIndent(resp, "", "    ")
+	j, err := jsonMarshal(resp)
 	if err != nil {
 		log.Printf("getSearchQueryWeek Handler: %s\n", err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")
@@ -260,7 +259,7 @@ func getSearchQueryWeek(w http.ResponseWriter, r *http.Request) {
 		since.Location(),
 	) // Sunday 23:59:59
 
-	tracks, err := ds.GetSearchResult(strings.Replace(vars["query"], "+", ",", -1), since, until)
+	tracks, err := conf.DS.GetSearchResult(strings.Replace(vars["query"], "+", ",", -1), since, until)
 	if err != nil {
 		log.Printf("getSearchQueryWeek Handler: GetSearchResult(%s, %q, %q): %s\n",
 			strings.Replace(vars["query"], "+", ",", -1), since, until, err.Error())
@@ -276,7 +275,7 @@ func getSearchQueryWeek(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	j, err := json.MarshalIndent(resp, "", "    ")
+	j, err := jsonMarshal(resp)
 	if err != nil {
 		log.Printf("getSearchQueryWeek Handler: %s\n", err.Error())
 		handleError(w, http.StatusInternalServerError, "Internal server error")

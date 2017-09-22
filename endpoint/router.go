@@ -7,13 +7,20 @@ import (
 	"errors"
 )
 
-var ds *datastore.Datastore
+type Config struct {
+	DS    *datastore.Datastore
+	CORS  string
+	Debug bool
+}
 
-func NewRouter(d *datastore.Datastore) (*mux.Router, error) {
-	if d == nil {
-		return nil, errors.New("datastore object must not be nil")
+var conf *Config
+
+// NewRouter creates a new Gorialla mux object based on the given config and assigns routes and loggers.
+func NewRouter(c *Config) (*mux.Router, error) {
+	if err := validateConfig(c); err != nil {
+		return nil, err
 	}
-	ds = d
+	conf = c
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
 		var handler http.Handler
@@ -22,4 +29,18 @@ func NewRouter(d *datastore.Datastore) (*mux.Router, error) {
 		router.Methods(route.Method).Path(route.Pattern).Name(route.Name).Handler(handler)
 	}
 	return router, nil
+}
+
+// validateConfig ensures that the Config object is valid.
+func validateConfig(c *Config) error {
+	if c == nil {
+		return errors.New("config object must not be nil")
+	}
+	if c.DS == nil {
+		return errors.New("config: datastore object must not be nil")
+	}
+	if c.CORS == "" {
+		return errors.New("config: cors string must not be empty")
+	}
+	return nil
 }

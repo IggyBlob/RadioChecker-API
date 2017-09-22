@@ -31,7 +31,13 @@ func main() {
 	}
 	defer ds.Close()
 
-	router, err := endpoint.NewRouter(ds)
+	config := &endpoint.Config{
+		DS: ds,
+		CORS: viper.GetString("service.access-control-allow-origin"),
+		Debug: viper.GetBool("service.debug"),
+	}
+
+	router, err := endpoint.NewRouter(config)
 	if err != nil {
 		log.Fatalf("Unable to create router: %s\n", err)
 	}

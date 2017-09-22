@@ -18,7 +18,9 @@ Example *config.json*:
 {
     "service": {
         "name": "rc-api-svc",
-        "port": 8080
+        "port": 8080,
+        "debug": true,
+        "access-control-allow-origin": "*"
     },
     "datastore": {
         "host": "hostname",
