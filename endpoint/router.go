@@ -15,7 +15,6 @@ func NewRouter(d *datastore.Datastore) (*mux.Router, error) {
 	}
 	ds = d
 	router := mux.NewRouter().StrictSlash(true)
-	router.PathPrefix("/api/")
 	for _, route := range routes {
 		var handler http.Handler
 		handler = route.HandlerFunc
