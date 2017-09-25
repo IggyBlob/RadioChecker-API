@@ -13,7 +13,7 @@ import (
 
 // index is the default handler.
 func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "RadioChecker API v0.3\n\nCopyright (C) 2017 Paul Haunschmied.\nwww.radiochecker.com")
+	fmt.Fprintln(w, "RadioChecker API v0.4\n\nCopyright (C) 2017 Paul Haunschmied.\nwww.radiochecker.com")
 }
 
 // getStations returns a map of all active radiostations using the format { "Name":"URI", ... }.
