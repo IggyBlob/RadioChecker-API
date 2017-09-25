@@ -1,15 +1,23 @@
 {
-  "service": {
-    "name": "rc-api-svc",
-    "port": 8080,
-    "debug": true,
-    "access-control-allow-origin": "*"
-  },
-  "datastore": {
-    "host": "hostname",
-    "port": 3306,
-    "username": "username",
-    "password": "password",
-    "schema": "radiochecker"
-  }
+    "service": {
+        "name": "rc-api-svc",
+        "port": 8080,
+        "debug": true,
+        "access-control-allow-origin": "*"
+    },
+    "datastore": {
+        "host": "hostname",
+        "port": 3306,
+        "username": "username",
+        "password": "password",
+        "schema": "radiochecker"
+    },
+    "metrics": {
+        "enabled": true,
+        "provider": {
+            "awsAkid": "awsAkid",
+            "awsSecretKey": "awsSecretKey",
+            "awsRegion": "awsRegion"
+        }
+    }
 }

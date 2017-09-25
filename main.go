@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"github.com/IggyBlob/RadioChecker-Core-Library/datastore"
+	"github.com/IggyBlob/RadioChecker-Core-Library/metrics"
 )
 
 const confFile string = "config_prod"
@@ -16,7 +17,7 @@ func main() {
 	viper.AddConfigPath(confDir)
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Fatal error on reading config file: %s \n", err)
+		log.Fatalf("Fatal error on reading config file: %s\n", err)
 	}
 
 	ds, err := datastore.NewDatastore(
@@ -27,14 +28,25 @@ func main() {
 		viper.GetString("datastore.schema"),
 	)
 	if err != nil {
-		log.Fatalf("Fatal error on creating datastore: %s \n", err)
+		log.Fatalf("Fatal error on creating datastore: %s\n", err)
 	}
 	defer ds.Close()
+
+	amp, err := metrics.NewAWSMetricProvider(
+		viper.GetString("metrics.provider.awsAkid"),
+		viper.GetString("metrics.provider.awsSecretKey"),
+		viper.GetString("metrics.provider.awsRegion"),
+		viper.GetBool("metrics.enabled"),
+	)
+	if err != nil {
+		log.Fatalf("Fatal error on creating AWSMetricProvider: %s\n", err)
+	}
 
 	config := &endpoint.Config{
 		DS: ds,
 		CORS: viper.GetString("service.access-control-allow-origin"),
 		Debug: viper.GetBool("service.debug"),
+		MetricProvider: amp,
 	}
 
 	router, err := endpoint.NewRouter(config)

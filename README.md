@@ -28,6 +28,14 @@ Example *config.json*:
         "username": "username",
         "password": "password",
         "schema": "radiochecker"
+    },
+    "metrics": {
+        "enabled": true,
+        "provider": {
+            "awsAkid": "awsAkid",
+            "awsSecretKey": "awsSecretKey",
+            "awsRegion": "awsRegion"
+        }
     }
 }
 ```
